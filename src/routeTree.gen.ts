@@ -19,6 +19,7 @@ import { Route as ProductsIndexImport } from './routes/products/index'
 import { Route as AuthIndexImport } from './routes/auth/index'
 import { Route as ProductsProductIdImport } from './routes/products/$productId'
 import { Route as CustomersCustomerIdImport } from './routes/customers/$customerId'
+import { Route as ReportsNewIndexImport } from './routes/reports/new/index'
 import { Route as ProductsNewIndexImport } from './routes/products/new/index'
 import { Route as ProductsInstanceIndexImport } from './routes/products/instance/index'
 import { Route as AuthLoginIndexImport } from './routes/auth/login/index'
@@ -82,6 +83,11 @@ const ProductsProductIdRoute = ProductsProductIdImport.update({
 
 const CustomersCustomerIdRoute = CustomersCustomerIdImport.update({
   path: '/customers/$customerId',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const ReportsNewIndexRoute = ReportsNewIndexImport.update({
+  path: '/reports/new/',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -207,6 +213,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProductsNewIndexImport
       parentRoute: typeof rootRoute
     }
+    '/reports/new/': {
+      id: '/reports/new/'
+      path: '/reports/new'
+      fullPath: '/reports/new'
+      preLoaderRoute: typeof ReportsNewIndexImport
+      parentRoute: typeof rootRoute
+    }
   }
 }
 
@@ -227,6 +240,7 @@ export const routeTree = rootRoute.addChildren({
   AuthLoginIndexRoute,
   ProductsInstanceIndexRoute,
   ProductsNewIndexRoute,
+  ReportsNewIndexRoute,
 })
 
 /* prettier-ignore-end */
@@ -250,7 +264,8 @@ export const routeTree = rootRoute.addChildren({
         "/products/instance/new",
         "/auth/login/",
         "/products/instance/",
-        "/products/new/"
+        "/products/new/",
+        "/reports/new/"
       ]
     },
     "/": {
@@ -294,6 +309,9 @@ export const routeTree = rootRoute.addChildren({
     },
     "/products/new/": {
       "filePath": "products/new/index.tsx"
+    },
+    "/reports/new/": {
+      "filePath": "reports/new/index.tsx"
     }
   }
 }

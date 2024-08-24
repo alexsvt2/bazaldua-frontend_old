@@ -4,7 +4,7 @@ import {
   useParams,
 } from '@tanstack/react-router';
 import { useEffect, useState } from 'react';
-import type { Product } from '../../types/Product.ts';
+import type { Product } from '../../types/product.types.ts';
 import axios from 'axios';
 import { Button } from 'react-bootstrap';
 
@@ -38,12 +38,26 @@ const Product = () => {
       {product && (
         <div>
           <h1>Product Details</h1>
-          <p><strong>ID:</strong> {product.id}</p>
-          <p><strong>Name:</strong> {product.name}</p>
-          <p><strong>Model:</strong> {product.model}</p>
-          <p><strong>Description:</strong> {product.description}</p>
-          <p><strong>Created At:</strong> {new Date(product.createdAt).toLocaleString()}</p>
-          <p><strong>Updated At:</strong> {new Date(product.updatedAt).toLocaleString()}</p>
+          <p>
+            <strong>ID:</strong> {product.id}
+          </p>
+          <p>
+            <strong>Name:</strong> {product.name}
+          </p>
+          <p>
+            <strong>Model:</strong> {product.model}
+          </p>
+          <p>
+            <strong>Description:</strong> {product.description}
+          </p>
+          <p>
+            <strong>Created At:</strong>{' '}
+            {new Date(product.createdAt).toLocaleString()}
+          </p>
+          <p>
+            <strong>Updated At:</strong>{' '}
+            {new Date(product.updatedAt).toLocaleString()}
+          </p>
         </div>
       )}
 

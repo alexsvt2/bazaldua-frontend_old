@@ -11,6 +11,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@tanstack/react-query": "^5.52.1",
     "@tanstack/react-router": "^1.46.6",
     "@yudiel/react-qr-scanner": "^2.0.4",
     "axios": "^1.7.3",
@@ -19,12 +20,15 @@
     "react": "^18.3.1",
     "react-bootstrap": "^2.10.4",
     "react-dom": "^18.3.1",
+    "react-select": "^5.8.0",
     "react-toastify": "^10.0.5",
     "yup": "^1.4.0"
   },
   "devDependencies": {
+    "@tanstack/eslint-plugin-query": "^5.52.0",
     "@tanstack/router-devtools": "^1.46.6",
     "@tanstack/router-plugin": "^1.46.6",
+    "@types/assert": "^1.5.10",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
     "@typescript-eslint/eslint-plugin": "^7.15.0",

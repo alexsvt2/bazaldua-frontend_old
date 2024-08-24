@@ -1,33 +1,22 @@
 import { createLazyFileRoute, Link, useNavigate } from '@tanstack/react-router'
-import axios from 'axios';
-import { useEffect, useState } from 'react'
-import { Customer } from '../../types/Customers';
 import { Card, CardLink } from 'react-bootstrap';
-
-const SERVER_URL = import.meta.env.VITE_SERVER_URL;
+import { useGetCustomers } from '../../hooks/use-get-customers';
 
 export const Route = createLazyFileRoute('/customers/')({
   component: () => <Index />,
 })
 
 const Index = () => {
-
-  const [customers, setCustomers] = useState<Customer[]>([])
   const navigation = useNavigate({ from: '/customers' });
-
-  const getCustomers = async () => {
-    const response = await axios.get(`${SERVER_URL}/customers`);
-    console.log(response.data);
-    setCustomers(response.data);
-  };
+  const { data, isLoading, error} = useGetCustomers(1);
 
   const handleClickCustomerNavigation = (customerId: number) => {
     navigation({ to: `/customers/${customerId}` })
   }
 
-  useEffect(() => {
-    getCustomers();
-  }, []);
+  if (isLoading) {
+    return <p>Loading...</p>
+  }
 
   return (
     <>
@@ -35,8 +24,8 @@ const Index = () => {
       <Link to="/customers/new">New Customer</Link>
       <hr />
       {
-        customers &&
-        customers.map((customer) => (
+        data?.items &&
+        data?.items.map((customer) => (
           <Card key={customer.id} className="mb-3 shadow" >
             <Card.Header># {customer.id}</Card.Header>
             <Card.Body>

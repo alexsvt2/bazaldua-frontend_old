@@ -6,7 +6,7 @@ const activeStyle = { color: 'red', fontWeight: 'bold' }
 
 export const Route = createRootRoute({
   component: () => (
-    <div className="container-fluid">
+    <div className="container">
       <div className="p-2 flex gap-2">
         <Link to="/" activeProps={{ style: activeStyle}} className='mx-2'>
           Home
