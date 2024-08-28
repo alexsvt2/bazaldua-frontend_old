@@ -5,6 +5,7 @@ import * as Yup from 'yup';
 import { Button, Form as BootstrapForm, Container, Row, Col } from 'react-bootstrap';
 import { SERVER_URL } from '../../constants';
 import { toast } from 'react-toastify';
+import { displayMessage } from '../../helpers/toast';
 
 interface CustomerFormValues {
   name: string;
@@ -25,13 +26,16 @@ export const Route = createLazyFileRoute('/customers/new')({
 })
 
 const CustomerForm: React.FC = () => {
-  const displayMessage = (text: string) => toast(text);
+
   const handleSubmit = async (values: CustomerFormValues, formikHelpers: FormikHelpers<CustomerFormValues>) => {
     const { setSubmitting } = formikHelpers;
     try {
       const response = await axios.post(`${SERVER_URL}/customers`, values);
 
-      displayMessage('Customer created successfully');
+      if (response.status === 201) {
+        displayMessage('Customer created successfully');
+      }
+
     } catch (error) {
       console.error('There was an error!', error);
     } finally {

@@ -8,6 +8,10 @@ interface Props {
 function ReportsTable(props: Props) {
   const { items } = props;
 
+  if (!items) {
+    return <div>Loading...</div>
+  }
+
   return (
     <Table striped bordered hover>
       <thead>

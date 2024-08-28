@@ -4,11 +4,14 @@ import { Field, Form, Formik, FormikHelpers } from "formik";
 import { Form as BootstrapForm } from "react-bootstrap";
 import axios from "axios";
 import { NewProductSchema } from "../../../helpers/validations/products/new-product.ts";
+import { createProduct } from '../../../api/products.ts';
+import { displayMessage } from '../../../helpers/toast.tsx';
 
 interface ProductFormValues {
   name: string;
   model: string;
   description: string;
+  brand: string;
 }
 
 interface NewProductModal {
@@ -18,13 +21,13 @@ interface NewProductModal {
 
 
 export function NewProduct({ props }: { props: NewProductModal }) {
-
-  const SERVER_URL = import.meta.env.VITE_SERVER_URL;
-
   const handleSubmit = async (values: ProductFormValues, formikHelpers: FormikHelpers<ProductFormValues>) => {
     const { setSubmitting } = formikHelpers;
     try {
-      const response = await axios.post(`${SERVER_URL}/products`, values);
+      const response = await createProduct(values);
+      if (response.status === 201) {
+        displayMessage('Product created successfully');
+      }
       console.log(response.data);
     } catch (error) {
       console.error('There was an error!', error);
@@ -99,22 +102,3 @@ export function NewProduct({ props }: { props: NewProductModal }) {
     </Modal>
   );
 }
-
-// function App() {
-//   const [modalShow, setModalShow] = React.useState(false);
-//
-//   return (
-//     <>
-//       <Button variant="primary" onClick={() => setModalShow(true)}>
-//         Launch vertically centered modal
-//       </Button>
-//
-//       <MyVerticallyCenteredModal
-//         show={modalShow}
-//         onHide={() => setModalShow(false)}
-//       />
-//     </>
-//   );
-// }
-//
-// render(<App />);

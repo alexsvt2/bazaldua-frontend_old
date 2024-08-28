@@ -1,18 +1,18 @@
 import { createFileRoute } from '@tanstack/react-router';
-import axios from 'axios';
-import { useEffect, useState } from "react";
 import ReportsTable from '../../components/Reports/ReportsTable.tsx';
-import { Report } from '../../types/Report.tsx';
 import { Button } from "react-bootstrap";
 import { useGetReports } from '../../hooks/use-get-reports.tsx';
-// import { Report } from '../../types/Report.tsx';
 
 export const Route = createFileRoute('/reports/')({
   component: () => Reports()
 })
 
 const Reports = () => {
-  const {data, isLoading, error} = useGetReports(1);
+  const { data, isLoading, error } = useGetReports(1);
+
+  if (error) {
+    return <div>Error: {error.message}</div>
+  }
 
   if (isLoading) {
     return <div>Loading...</div>
@@ -28,7 +28,7 @@ const Reports = () => {
       }}>
         <Button href="/reports/new">New Report</Button>
       </div>
-      <ReportsTable items={data?.items as Report[]} />
+      <ReportsTable items={data?.items} />
     </div>
   )
 }

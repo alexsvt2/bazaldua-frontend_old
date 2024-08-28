@@ -1,160 +1,40 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Field, FieldArray, Form, Formik, FormikHelpers } from 'formik';
-import axios from 'axios';
-import Select from 'react-select';
+import ReactSelect from 'react-select';
 import { Button, Col, Form as BootstrapForm, Row } from 'react-bootstrap';
-import { CustomerProduct } from '../../types/customer-product.types.ts';
-import { Customer } from '../../types/customer.types.ts';
-import { Product } from '../../types/product.types.ts';
-import { NewProductSchema } from '../../helpers/validations/products/new-product.ts';
 import { NewProduct } from '../Modals/Products/NewProduct.tsx'; // Assuming you have a Product type
-
-export interface ReportFormValues {
-  customerId: number | null;
-  userId: number;
-  observationsEngineer: string;
-  observationsCustomer: string;
-  serviceType: 'PREVENTIVE' | 'CORRECTIVE';
-  reportType: 'WARRANTY' | 'INVOICABLE';
-  status: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
-  reportItems: {
-    customerProductId: number;
-    observations: string;
-  }[];
-}
+import { useGetCustomers } from '../../hooks/use-get-customers.tsx';
+import { useGetProducts } from '../../hooks/use-get-products.tsx';
+import { useGetCustomerProducts } from '../../hooks/use-get-customer-products.tsx';
+import { formatCustomerProductsOptions, formatCustomersOptions, formatProductsOptions } from '../../helpers/array-react-select-transform.ts';
+import { ReportFormValues } from '../../types/Forms/report-form-values.types.ts';
+import { ReportSchema } from '../../helpers/validations/reports/new-report.ts';
+import { createReport } from '../../api/reports.ts';
 
 const ReportForm = () => {
-  const SERVER_URL = import.meta.env.VITE_SERVER_URL;
-  const [customers, setCustomers] = useState<
-    { value: number; label: string }[]
-  >([]);
-  const [customerProducts, setCustomerProducts] = useState<
-    { value: number; label: string }[]
-  >([]);
-  const [products, setProducts] = useState<{ value: number; label: string }[]>(
-    [],
-  );
   const [showNewProductModal, setShowNewProductModal] =
     useState<boolean>(false);
 
-  console.log(products);
+  const { data: customers } = useGetCustomers(1);
+  const { data: products } = useGetProducts(1);
+  const { data: customerProducts } = useGetCustomerProducts(1);
 
-  useEffect(() => {
-    const fetchCustomers = async () => {
-      try {
-        const response = await axios.get<Customer[]>(`${SERVER_URL}/customers`);
-        const customerOptions = response.data.map((customer) => ({
-          value: customer.id,
-          label: customer.name,
-        }));
-        setCustomers(customerOptions);
-      } catch (error) {
-        console.error('Error fetching customers', error);
-      }
-    };
-
-    const fetchCustomerProducts = async () => {
-      try {
-        const response = await axios.get<CustomerProduct[]>(
-          `${SERVER_URL}/customer-products`,
-        );
-        const productOptions = response.data.map((product) => ({
-          value: product.id,
-          label: product.serialNumber + ' - ' + product.product.name,
-        }));
-        setCustomerProducts(productOptions);
-      } catch (error) {
-        console.error('Error fetching customer products', error);
-      }
-    };
-
-    const fetchProducts = async () => {
-      try {
-        const response = await axios.get<Product[]>(`${SERVER_URL}/products`);
-        const productOptions = response.data.map((product) => ({
-          value: product.id,
-          label: product.name,
-        }));
-        setProducts(productOptions);
-      } catch (error) {
-        console.error('Error fetching products', error);
-      }
-    };
-
-    fetchCustomers();
-    fetchCustomerProducts();
-    fetchProducts();
-  }, [SERVER_URL]);
-
-  const createProduct = async (product: {
-    name: string;
-    brand: string;
-    model: string;
-    description: string;
-  }) => {
-    try {
-      const response = await axios.post<Product>(
-        `${SERVER_URL}/products`,
-        product,
-      );
-      return response.data;
-    } catch (error) {
-      console.error('Error creating product', error);
-      throw error;
-    }
-  };
-
-  const createCustomerProduct = async (customerProduct: {
-    serialNumber: string;
-    internalControl: string;
-    tecnoControl: string;
-    productId: number;
-    customerId: number;
-  }) => {
-    try {
-      const response = await axios.post<CustomerProduct>(
-        `${SERVER_URL}/customer-products`,
-        customerProduct,
-      );
-      return response.data;
-    } catch (error) {
-      console.error('Error creating customer product', error);
-      throw error;
-    }
-  };
+  const customerOptions = formatCustomersOptions(customers?.items || []);
+  const productOptions = formatProductsOptions(products?.items || []);
+  const customerProductOptions = formatCustomerProductsOptions(customerProducts?.items || []);
 
   const handleSubmit = async (
     values: ReportFormValues,
     formikHelpers: FormikHelpers<ReportFormValues>,
   ) => {
-    const { setSubmitting } = formikHelpers;
+    const { setSubmitting, } = formikHelpers;
     try {
-      // Create products and customer products if they don't exist
-      for (const item of values.reportItems) {
-        const customerProductExists = customerProducts.find(
-          (cp) => cp.value === item.customerProductId,
-        );
-        if (!customerProductExists) {
-          // Assume product creation is needed
-          const newProduct = await createProduct({
-            name: 'New Product',
-            brand: 'Brand X',
-            model: 'Model Z',
-            description: 'Description of new product',
-          });
-
-          await createCustomerProduct({
-            serialNumber: 'NEW_SERIAL',
-            internalControl: 'IC-NEW',
-            tecnoControl: 'TC-NEW',
-            productId: newProduct.id,
-            customerId: values.customerId!,
-          });
-        }
-      }
-
-      await axios.post(`${SERVER_URL}/reports`, values);
-      console.log('Report created successfully');
+      const response = await createReport(values);
+      // if(response.status === 201) {
+      // }
+      console.log(response);
+      // if (response)
+      console.log(response)
     } catch (error) {
       console.error('There was an error creating the report:', error);
     } finally {
@@ -165,24 +45,42 @@ const ReportForm = () => {
   return (
     <Formik
       initialValues={{
-        customerId: null,
-        userId: 1, // Example value
+        customerId: 1,
+        userId: 1,
         observationsEngineer: '',
         observationsCustomer: '',
         serviceType: 'PREVENTIVE',
         reportType: 'WARRANTY',
         status: 'PENDING',
-        reportItems: [{ customerProductId: 0, observations: '' }],
+        reportItems: [{
+          customerProductId: 0,
+          observations: ''
+        }],
       }}
-      validationSchema={NewProductSchema}
+      validationSchema={ReportSchema}
       onSubmit={handleSubmit}
     >
       {({ errors, touched, isSubmitting, setFieldValue, values }) => (
         <Form>
+          <h1>Values</h1>
+          {
+            JSON.stringify(values)
+          }
+          <hr />
+          <h2>
+            Errors
+          </h2>
+          {
+            JSON.stringify(errors)
+          }
+          <hr />
           <Row>
-            <Col>
-              <Button onClick={() => setShowNewProductModal(true)}>
+            <Col className='text-end'>
+              <Button className="me-2" onClick={() => setShowNewProductModal(true)}>
                 Add New Product
+              </Button>
+              <Button onClick={() => console.log('Add New Customer')}>
+                Add New Customer
               </Button>
             </Col>
           </Row>
@@ -190,16 +88,15 @@ const ReportForm = () => {
             <Col md={6}>
               <BootstrapForm.Group controlId="customerId">
                 <BootstrapForm.Label>Customer</BootstrapForm.Label>
-                <Select
-                  options={customers}
-                  onChange={(option) =>
-                    setFieldValue('customerId', option ? option.value : null)
-                  }
-                  value={
-                    customers.find(
-                      (option) => option.value === values.customerId,
-                    ) || null
-                  }
+                <ReactSelect
+                  placeholder="Select customer"
+                  isSearchable
+                  id='customerId'
+                  name='customerId'
+                  isClearable
+                  options={customerOptions}
+                  onChange={(option) => setFieldValue('customerId', option ? option.value : null)}
+                  value={customerOptions.find((option) => option.value === values.customerId)}
                 />
                 {errors.customerId && touched.customerId ? (
                   <div className="text-danger">{errors.customerId}</div>
@@ -274,9 +171,11 @@ const ReportForm = () => {
                             <BootstrapForm.Group
                               controlId={`reportItems[${index}].customerProductId`}
                             >
-                              <BootstrapForm.Label>Product</BootstrapForm.Label>
-                              <Select
-                                options={customerProducts}
+                              <BootstrapForm.Label>Customer Product </BootstrapForm.Label>
+
+                              <ReactSelect
+                                options={customerProductOptions}
+                                isClearable
                                 onChange={(option) =>
                                   setFieldValue(
                                     `reportItems[${index}].customerProductId`,
@@ -284,7 +183,7 @@ const ReportForm = () => {
                                   )
                                 }
                                 value={
-                                  customerProducts.find(
+                                  customerProductOptions.find(
                                     (option) =>
                                       option.value === item.customerProductId,
                                   ) || null
@@ -292,9 +191,9 @@ const ReportForm = () => {
                               />
                               {errors.reportItems &&
                               errors.reportItems[index] &&
-                              errors.reportItems[index].customerProductId ? (
+                              errors.reportItems[index]?.customerProductId ? (
                                 <div className="text-danger">
-                                  {errors.reportItems[index].customerProductId}
+                                  {errors.reportItems[index]?.customerProductId}
                                 </div>
                               ) : null}
                             </BootstrapForm.Group>
@@ -319,8 +218,8 @@ const ReportForm = () => {
                             className="form-control"
                           />
                           {errors.reportItems &&
-                          errors.reportItems[index] &&
-                          errors.reportItems[index].observations ? (
+                            errors.reportItems[index] &&
+                            errors.reportItems[index].observations ? (
                             <div className="text-danger">
                               {errors.reportItems[index].observations}
                             </div>
